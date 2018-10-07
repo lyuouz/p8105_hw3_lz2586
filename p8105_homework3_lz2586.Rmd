@@ -10,18 +10,43 @@ output:
 ```{r setup, include=FALSE}
 library(tidyverse)
 options(tibble.print_min = 5)
+library(p8105.datasets)
+library(httr)
+library(jsonlite)
+
+```
+
+## Problem 1  
+### part 1
+
+```{r Problem_1_pt_1}
+# This part focuses on data import and data cleaning
+# Import BRFSS data (built in in the p8105 data package), data cleaning and formating
+brfss <- brfss_smart2010 %>% 
+  janitor::clean_names() %>% 
+  rename(state = 'locationabbr', county = 'locationdesc') %>% 
+  filter(topic == 'Overall Health') %>% 
+  select(-(class:question), -sample_size, -(confidence_limit_low:geo_location)) %>% 
+  mutate(response = tolower(response))
+# I put the BRFSS data in a data frame called "brfss", cleaned the names and renamed the variable "locationabbr" to "state", and "locationdesc" to "county", filtered the topic and only kept "overall health", selected the variables, and turned the responses to lower case.
+
+# Now "response" is a character variable. I will convert it ("excellent" to "poor") to an ordered factor variable.
+brfss$response_factor <- factor(brfss$response, levels = c('poor', 'fair', 'good', 'very good', 'excellent'), ordered = TRUE)
+
+# We can check the order by further convert the factor variable to a numeric variable
+brfss$response_num <- as.numeric(brfss$response_factor) 
+
+```
+
+### part 2
+
+```{r problem_1_pt_2}
+# Part 2 focuses on visualization and answering the questions
+
 
 
 ```
 
-
-```{r}
-
-
-
-
-
-```
 
 ## Including Plots
 
