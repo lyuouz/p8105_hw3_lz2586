@@ -13,6 +13,7 @@ options(tibble.print_min = 5)
 library(p8105.datasets)
 library(httr)
 library(jsonlite)
+library(patchwork)
 
 ```
 
@@ -31,10 +32,7 @@ brfss <- brfss_smart2010 %>%
 # I put the BRFSS data in a data frame called "brfss", cleaned the names and renamed the variable "locationabbr" to "state", and "locationdesc" to "county", filtered the topic and only kept "overall health", selected the variables, and turned the responses to lower case.
 
 # Now "response" is a character variable. I will convert it ("excellent" to "poor") to an ordered factor variable.
-brfss$response_factor <- factor(brfss$response, levels = c('poor', 'fair', 'good', 'very good', 'excellent'), ordered = TRUE)
-
-# We can check the order by further convert the factor variable to a numeric variable
-brfss$response_num <- as.numeric(brfss$response_factor) 
+brfss$response <- factor(brfss$response, levels = c('poor', 'fair', 'good', 'very good', 'excellent'), ordered = TRUE)
 
 ```
 
@@ -42,8 +40,93 @@ brfss$response_num <- as.numeric(brfss$response_factor)
 
 ```{r problem_1_pt_2}
 # Part 2 focuses on visualization and answering the questions
+# For this part, I need an untidy version of BRFSS to answer some of the questions, so I created "brfss_untidy"
+brfss_untidy <- spread(brfss, key = response, value = data_value)
 
+# Q1. In 2002, which states were observed at 7 locations?
+# I created a data frame which counts the number of locations of each state called "location_num"
+location_num_2002 <- 
+  brfss_untidy %>% 
+  filter(year == '2002') %>% 
+  group_by(state) %>% 
+  summarize(n_location = n())
+# Use filter to find the state where 7 locations were observed
+filter(location_num_2002, n_location == 7)
+# Connecticut, Florida and North Carolina have 7 locations observed
 
+# Q2. Make a “spaghetti plot” that shows the number of observations in each state from 2002 to 2010.
+# Create a data frame that counts the number of observations of each state by year, and use ggplot + geom_line
+location_num <- 
+  brfss_untidy %>% 
+  group_by(year, state) %>% 
+  summarize(n_location = n())
+
+ggplot(location_num, aes(x = year, y = n_location, color = state)) + 
+  geom_line() + 
+  labs(title = 'Number of observations in each state from 2002 to 2010',
+       y = 'Number of observations of each state'
+       )
+# Actually the plot does not work very well because there are too colors used by states, and a lot of them are hard to tell
+
+# Q3. Make a table showing, for the years 2002, 2006, and 2010, the mean and standard deviation of the proportion of “Excellent” responses across locations in NY State.
+# I filter the years from the brfss_untidy data frame and group_by by year and state, and summarize by mean and sd and knit a table
+brfss_untidy %>% 
+  filter(year == '2002' | year == '2006' | year == '2010') %>% 
+  group_by(year, state) %>% 
+  summarize(excellent_mean = mean(excellent),
+            excellent_sd = sd(excellent)) %>% 
+  knitr::kable()
+
+# Q4. For each year and state, compute the average proportion in each response category (taking the average across locations in a state). Make a five-panel plot that shows, for each response category separately, the distribution of these state-level averages over time.
+# I plot the average proportion in each response category (poor_p to excellent_p), and organize them in panels. For each plot, I use the brfss_untidy data and group by year and state, summarize by mean and use ggplot + geom_line
+poor_p <- 
+  brfss_untidy %>% 
+  group_by(year, state) %>% 
+  summarize(poor_mean = mean(poor)) %>% 
+  ggplot(aes(x = year, y = poor_mean, color = state)) + 
+  geom_line() +
+  labs(title = 'Average proportion of response for each category',
+       y = 'poor') +
+  theme(legend.position = "none")
+
+fair_p <- 
+  brfss_untidy %>% 
+  group_by(year, state) %>% 
+  summarize(fair_mean = mean(fair)) %>% 
+  ggplot(aes(x = year, y = fair_mean, color = state)) + 
+  geom_line() +
+  labs(y = 'fair') +
+  theme(legend.position = "none")
+  
+good_p <- 
+  brfss_untidy %>% 
+  group_by(year, state) %>% 
+  summarize(good_mean = mean(good)) %>% 
+  ggplot(aes(x = year, y = good_mean, color = state)) + 
+  geom_line() +
+  labs(y = 'good') +
+  theme(legend.position = "none")
+  
+vgood_p <- 
+  brfss_untidy %>% 
+  group_by(year, state) %>% 
+  summarize(vgood_mean = mean(`very good`)) %>% 
+  ggplot(aes(x = year, y = vgood_mean, color = state)) + 
+  geom_line() +
+  labs(y = 'very good') +
+  theme(legend.position = "none")
+
+excellent_p <- 
+  brfss_untidy %>% 
+  group_by(year, state) %>% 
+  summarize(excellent_mean = mean(excellent)) %>% 
+  ggplot(aes(x = year, y = excellent_mean, color = state)) + 
+  geom_line() +
+  labs(y = 'excellent') +
+  theme(legend.position = "bottom")
+
+# Organize these five plots in panels (with patchwork)
+ (poor_p + fair_p) / (good_p + vgood_p) / excellent_p
 
 ```
 
