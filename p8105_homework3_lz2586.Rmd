@@ -14,6 +14,7 @@ library(p8105.datasets)
 library(httr)
 library(jsonlite)
 library(patchwork)
+library(lubridate)
 
 ```
 
@@ -66,6 +67,7 @@ ggplot(location_num, aes(x = year, y = n_location, color = state)) +
   labs(title = 'Number of observations in each state from 2002 to 2010',
        y = 'Number of observations of each state'
        )
+ggsave('spaghetti_plot.jpeg')
 # Actually the plot does not work very well because there are too colors used by states, and a lot of them are hard to tell
 
 # Q3. Make a table showing, for the years 2002, 2006, and 2010, the mean and standard deviation of the proportion of “Excellent” responses across locations in NY State.
@@ -77,66 +79,198 @@ brfss_untidy %>%
             excellent_sd = sd(excellent)) %>% 
   knitr::kable()
 
-# Q4. For each year and state, compute the average proportion in each response category (taking the average across locations in a state). Make a five-panel plot that shows, for each response category separately, the distribution of these state-level averages over time.
-# I plot the average proportion in each response category (poor_p to excellent_p), and organize them in panels. For each plot, I use the brfss_untidy data and group by year and state, summarize by mean and use ggplot + geom_line
-poor_p <- 
-  brfss_untidy %>% 
-  group_by(year, state) %>% 
-  summarize(poor_mean = mean(poor)) %>% 
-  ggplot(aes(x = year, y = poor_mean, color = state)) + 
-  geom_line() +
-  labs(title = 'Average proportion of response for each category',
-       y = 'poor') +
-  theme(legend.position = "none")
+```
 
-fair_p <- 
-  brfss_untidy %>% 
-  group_by(year, state) %>% 
-  summarize(fair_mean = mean(fair)) %>% 
-  ggplot(aes(x = year, y = fair_mean, color = state)) + 
-  geom_line() +
-  labs(y = 'fair') +
-  theme(legend.position = "none")
+**For each year and state, compute the average proportion in each response category (taking the average across locations in a state). Make a five-panel plot that shows, for each response category separately, the distribution of these state-level averages over time.**   
+
+plot the average proportion in each response category (poor_p to excellent_p), and organize them in panels. For each plot, I use the brfss_untidy data and group by year and state, summarize by mean and use ggplot + geom_line
+
+```{r q1_4}
+
+brfss %>% 
+  group_by(year, state, response) %>% 
+  summarize(avg_prop = mean(data_value)) %>% 
+  ggplot(aes(x = year, y = avg_prop)) + 
+  geom_point() + 
+  geom_smooth(se = F) +
+  facet_grid(~response) +
+  labs(title = 'Average proportion of each response category over time',
+      y = 'Average proportion',
+      x = 'Year'
+)
+
+```
+
+### Comment:
+#### Data cleaning
+In part 1, I put the BRFSS data in a data frame called "brfss", cleaned the names and renamed the variable "locationabbr" to "state", and "locationdesc" to "county", filtered the topic and only kept "overall health", selected the variables, and turned the responses to lower case.  
+I also used factor() to convert the response, which was a character variable, to an ordered factor variable.  
   
-good_p <- 
-  brfss_untidy %>% 
-  group_by(year, state) %>% 
-  summarize(good_mean = mean(good)) %>% 
-  ggplot(aes(x = year, y = good_mean, color = state)) + 
-  geom_line() +
-  labs(y = 'good') +
-  theme(legend.position = "none")
+#### Answers for the questions:  
+* In 2002, **Connecticut**, **Florida** and **North Carolina** have 7 locations observed.  
+* See **Spaghetti_plot.jpeg**.  
+* See Q3 in the code.  
+* See **response_panel.jpeg**.
+
+## Problem 2
+
+```{r p2_cleaning}
+data(instacart)
+# To turn the variable "reordered" to a logical variable
+instacart$reorderd <- as.logical(instacart$reordered)
+# To remove the variable "eval_set" because it's the same for every observation
+instacart <- 
+  instacart %>% 
+  select(-eval_set)
+# Size of the data
+dim(instacart)
+
+```
+
+```{r p2_q1}
+# Q1. How many aisles are there, and which aisles are the most items ordered from?
+aisle <- 
+instacart %>% 
+  group_by(aisle) %>% 
+  summarize(n_aisle = n()) %>% 
+  arrange(n_aisle)
+# Vegetables is the aisle that most items are ordered from
+```
+
+```{r p2_q2}
+
+# Q2. Make a plot that shows the number of items ordered in each aisle. Order aisles sensibly, and organize your plot so others can read it.
+instacart %>% 
+  ggplot(aes(x = aisle)) + geom_bar()
+# How to organize?
+##########################
+
+```
+
+```{r p2_q3}
+# Q3. Make a table showing the most popular item aisles “baking ingredients”, “dog food care”, and “packaged vegetables fruits”
+instacart %>% 
+  filter(aisle == 'baking ingredients' | aisle == 'dog food care' | aisle == 'packaged vegetables fruits') %>% 
+  group_by(aisle, product_name) %>% 
+  summarize(n = n()) %>% 
+  top_n(1) %>%  
+  knitr::kable()
+
+```
+
+```{r p2_q4}
+# Q4. Make a table showing the mean hour of the day at which Pink Lady Apples and Coffee Ice Cream are ordered on each day of the week; format this table for human readers (i.e. produce a 2 x 7 table).
+instacart %>% 
+  filter(product_name == 'Pink Lady Apples' | product_name == 'Coffee Ice Cream') %>% 
+  group_by(product_name, order_dow) %>% 
+  summarize(mean_hod = mean(order_hour_of_day)) %>% 
+  spread(key = order_dow, value = mean_hod) %>% 
+  rename('Sunday' = '0', 'Monday' = '1', 'Tuesday' = '2', 'Wednesday' = '3', 'Thursday' = '4', 'Friday' = '5', 'Saturday' = '6') %>% 
+  knitr::kable()
+
+```
+
+```{r p3}
+
+noaa <- ny_noaa
+# Dimension of the dataset
+dim(noaa)
+# 2595176 rows and 7 columns
+# Take a look at the summary of the data, which will tell me the variable types, the number of missing values and summary statistics
+summary(noaa)
+# convert tmax and tmin to numeric variables
+noaa$tmax <- as.integer(noaa$tmax)
+noaa$tmin <- as.integer(noaa$tmin)
+# further look at the summary statistics 
+skimr::skim(noaa)
+# there are a lot of missing data
+
+# the percentages of missing data of each numeric variable
+# overall
+mean(is.na(noaa))
+# 18.6% of the data are missing
+
+# for prcp, snow, snwd, tmax and tmin
+mean(is.na(noaa$prcp))
+mean(is.na(noaa$snow))
+mean(is.na(noaa$snwd))
+mean(is.na(noaa$tmax))
+mean(is.na(noaa$tmin))
+# the percentages of missing values range from 5.6% to 43.7%
+
+```
+
+The NOAA dataset has 7 variables and 2595176 observations. The variables include the id, date, precipitation, snowfall, snow depth, the maximum and minimum temperature of the day. There are a lot of missing variables in this dataset, but the extent to which the missing data becomes an issue varies between variables. The percentages of missing values in precipitation, snowfall, snow depth, maximum and minimum temperatures range from 5.6% (precipitation), which is relatively minor, to 43.7% (temperatures) which becomes significant.  
   
-vgood_p <- 
-  brfss_untidy %>% 
-  group_by(year, state) %>% 
-  summarize(vgood_mean = mean(`very good`)) %>% 
-  ggplot(aes(x = year, y = vgood_mean, color = state)) + 
-  geom_line() +
-  labs(y = 'very good') +
-  theme(legend.position = "none")
+  
+* Do some data cleaning. Create separate variables for year, month, and day. Ensure observations for temperature, precipitation, and snowfall are given in reasonable units. For snowfall, what are the most commonly observed values? Why?
 
-excellent_p <- 
-  brfss_untidy %>% 
-  group_by(year, state) %>% 
-  summarize(excellent_mean = mean(excellent)) %>% 
-  ggplot(aes(x = year, y = excellent_mean, color = state)) + 
-  geom_line() +
-  labs(y = 'excellent') +
-  theme(legend.position = "bottom")
+```{r p3_1}
+# use year(), month() and date() to extract year, month and day from date
+# also tmin and tmax are not incorrect units. need to divide them by 10.
+noaa <- noaa %>% 
+  mutate(
+    tmin = tmin/10,
+    tmax = tmax/10,
+    year = year(as.POSIXlt(date, unit = "year")),
+    month = month(as.POSIXlt(date, format = '%Y/%m/%d')),
+    day = day(as.POSIXlt(date, unit = "day"))
+) %>% 
+  select(id, year, month, day, everything())
 
-# Organize these five plots in panels (with patchwork)
- (poor_p + fair_p) / (good_p + vgood_p) / excellent_p
+# take a look
+head(noaa)
+# year, month and day are successfully extracted!
+
+# the distribution of snowfall: use a histogram
+noaa %>% 
+  ggplot(aes(x = snow)) + geom_histogram(bins = 100, na.rm = T)
+# the most common value is 0
+
+```
+
+For this question, I use year(), month() and day() to extract year, month and day from the "date" variable. From the results under the head(noaa) command, these variables have been successfully extracted. I also convert tmax and tmin to the reasonable unit by dividing them by 10.  
+  
+For snowfall, I use a histogram (bins = 100) to see the distribution of snowfall. The plot shows that the most commonly observed value is **0**. Because during most time of the year there is no snowfall at all.  
+  
+  
+* Make a two-panel plot showing the average temperature in January and in July in each station across years. Is there any observable / interpretable structure? Any outliers?
+
+```{r q3_2}
+
+noaa %>% 
+  filter(month == '1' | month == '7') %>% 
+  mutate(avg_temp = (tmax + tmin)/2) %>% 
+  group_by(id, year, month) %>%
+  summarize(avg_temp_year = mean(avg_temp)) %>% 
+  ggplot(aes(x = year, y = avg_temp_year)) +
+  geom_point() +
+  geom_smooth() +
+  facet_grid(~month) +
+  labs(
+    title = 'Average temperature in January and July across years',
+    y = 'Average temperature'
+  ) +
+  theme_bw()
+
+ggsave('q3_2.jepg')
+
+```
+
+I filter January and July, create a variable called "avg_temp" for the daily average temperature, group by id, year and month and calculate the mean temperature, and use ggplot, geom_point and geom_smooth to make the plot.  
+  
+In general, the temperature in January is much lower than July. The temperatue across stations and years fluctuate but are stable overall. Compared to July, the variation of temperature between stations is more significant. There two outliers in the July panel in 2004 and 2007 respectively.  
+  
+* Make a two-panel plot showing (i) tmax vs tmin for the full dataset (note that a scatterplot may not be the best option); and (ii) make a plot showing the distribution of snowfall values greater than 0 and less than 100 separately by year.
+
+```{r q3_3}
+noaa %>% 
+  ggplot(aes(x = tmax, y = tmin)) + geom_smooth(na.rm = T)
+
+
+
 
 ```
 
 
-## Including Plots
 
-You can also embed plots, for example:
-
-```{r pressure, echo=FALSE}
-plot(pressure)
-```
-
-Note that the `echo = FALSE` parameter was added to the code chunk to prevent printing of the R code that generated the plot.
