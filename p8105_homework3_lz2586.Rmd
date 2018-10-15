@@ -42,7 +42,7 @@ brfss$response <- factor(brfss$response, levels = c('poor', 'fair', 'good', 'ver
 * I put the BRFSS data in a data frame called "brfss", cleaned the names and renamed the variable "locationabbr" to "state", and "locationdesc" to "county", filtered the topic and only kept "overall health", selected the variables, and turned the responses to lower case.  
 * I also used factor() to convert the response, which was a character variable, to an ordered factor variable.  
 
-#### In 2002, which states were observed at 7 locations?
+#### * In 2002, which states were observed at 7 locations?
 
 ```{r p1_1}
 # Part 2 focuses on visualization and answering the questions
@@ -62,7 +62,7 @@ filter(location_num_2002, n_location == 7)
 
 * In 2002, **Connecticut**, **Florida** and **North Carolina** have 7 locations observed. 
 
-#### Make a “spaghetti plot” that shows the number of observations in each state from 2002 to 2010.
+#### * Make a “spaghetti plot” that shows the number of observations in each state from 2002 to 2010.
 
 ```{r p1_2}
 
@@ -83,7 +83,7 @@ ggsave('spaghetti_plot.jpeg')
 
 ```
 
-#### Make a table showing, for the years 2002, 2006, and 2010, the mean and standard deviation of the proportion of “Excellent” responses across locations in NY State.
+#### * Make a table showing, for the years 2002, 2006, and 2010, the mean and standard deviation of the proportion of “Excellent” responses across locations in NY State.
 
 ```{r p1_3}
 
@@ -98,7 +98,7 @@ brfss_untidy %>%
 
 ```
 
-#### For each year and state, compute the average proportion in each response category (taking the average across locations in a state). Make a five-panel plot that shows, for each response category separately, the distribution of these state-level averages over time.   
+#### * For each year and state, compute the average proportion in each response category (taking the average across locations in a state). Make a five-panel plot that shows, for each response category separately, the distribution of these state-level averages over time.   
 
 plot the average proportion in each response category (poor_p to excellent_p), and organize them in panels. For each plot, I use the brfss_untidy data and group by year and state, summarize by mean and use ggplot + geom_line
 
@@ -136,7 +136,7 @@ dim(instacart)
 
 ```
 
-#### How many aisles are there, and which aisles are the most items ordered from?
+#### * How many aisles are there, and which aisles are the most items ordered from?
 
 ```{r p2_q1}
 aisle <- 
@@ -152,7 +152,7 @@ dim(aisle)
 
 * There are 134 rows. The top 5 aisles that the most items are ordered from are fresh vegetables (No.1), fresh fruits (No.2), packaged vegetables fruits (No.3), yogurt (No.4), packaged cheese(No.5).  
 
-#### Make a plot that shows the number of items ordered in each aisle. Order aisles sensibly, and organize your plot so others can read it.
+#### * Make a plot that shows the number of items ordered in each aisle. Order aisles sensibly, and organize your plot so others can read it.
 
 ```{r p2_q2}
   
@@ -168,7 +168,7 @@ aisle %>%
 
 ```
 
-#### Make a table showing the most popular item aisles “baking ingredients”, “dog food care”, and “packaged vegetables fruits”
+#### * Make a table showing the most popular item aisles “baking ingredients”, “dog food care”, and “packaged vegetables fruits”
 
 ```{r p2_q3}
 # filter the aisles, group them, summarize the counts, show the top 1 item and knit
@@ -181,7 +181,7 @@ instacart %>%
 
 ```
 
-#### Make a table showing the mean hour of the day at which Pink Lady Apples and Coffee Ice Cream are ordered on each day of the week; format this table for human readers (i.e. produce a 2 x 7 table)
+#### * Make a table showing the mean hour of the day at which Pink Lady Apples and Coffee Ice Cream are ordered on each day of the week; format this table for human readers (i.e. produce a 2 x 7 table)
 
 ```{r p2_q4}
 
@@ -231,7 +231,7 @@ mean(is.na(noaa$tmin))
 The NOAA dataset has 7 variables and 2595176 observations. The variables include the id, date, precipitation, snowfall, snow depth, the maximum and minimum temperature of the day. There are a lot of missing variables in this dataset, but the extent to which the missing data becomes an issue varies between variables. The percentages of missing values in precipitation, snowfall, snow depth, maximum and minimum temperatures range from 5.6% (precipitation), which is relatively minor, to 43.7% (temperatures) which becomes significant.  
   
   
-#### Do some data cleaning. Create separate variables for year, month, and day. Ensure observations for temperature, precipitation, and snowfall are given in reasonable units. For snowfall, what are the most commonly observed values? Why?
+#### * Do some data cleaning. Create separate variables for year, month, and day. Ensure observations for temperature, precipitation, and snowfall are given in reasonable units. For snowfall, what are the most commonly observed values? Why?
 
 ```{r p3_1}
 # use year(), month() and date() to extract year, month and day from date
@@ -263,7 +263,7 @@ For this question, I use year(), month() and day() to extract year, month and da
 For snowfall, I use a density plot to see the distribution of snowfall. The plot shows that the most commonly observed value is **0**. Because during most time of the year there is no snowfall at all.  
   
   
-#### Make a two-panel plot showing the average temperature in January and in July in each station across years. Is there any observable / interpretable structure? Any outliers?
+#### * Make a two-panel plot showing the average temperature in January and in July in each station across years. Is there any observable / interpretable structure? Any outliers?
 
 ```{r q3_2}
 
@@ -296,7 +296,7 @@ I filter January and July, create a variable called "avg_temp" for the daily ave
   
 In general, the temperature in January is much lower than July. The temperatue across stations and years fluctuate but are stable overall. Compared to July, the variation of temperature between stations is more significant.  
   
-#### Make a two-panel plot showing (i) tmax vs tmin for the full dataset (note that a scatterplot may not be the best option); and (ii) make a plot showing the distribution of snowfall values greater than 0 and less than 100 separately by year
+#### * Make a two-panel plot showing (i) tmax vs tmin for the full dataset (note that a scatterplot may not be the best option); and (ii) make a plot showing the distribution of snowfall values greater than 0 and less than 100 separately by year
 
 ```{r q3_3}
 max_min <- noaa %>% 
@@ -316,5 +316,5 @@ max_min/sf_0_100
 
 "geom_hex" shows the relationship between tmax and tmin (max_min) and where most points fall in the plot. The relationship seems pretty linear. As tmax increases, tmin increases too. Most points fall in the center of the plot and show a linear pattern.  
   
-The box plot shows the distribution of snowfall values >0 and <100 by year. The average snowfall seems very stable across years. However the distribution shows more fluctuation from 2004 to 2010.
+The box plot shows the distribution of snowfall values >0 and <100 by year. The average snowfall seems very stable across years. However the distribution shows more fluctuation from 2004 ~ 2010.
 

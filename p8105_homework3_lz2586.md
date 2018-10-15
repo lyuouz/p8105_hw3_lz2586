@@ -30,7 +30,7 @@ brfss$response <- factor(brfss$response, levels = c('poor', 'fair', 'good', 'ver
   - I also used factor() to convert the response, which was a character
     variable, to an ordered factor variable.
 
-#### In 2002, which states were observed at 7 locations?
+#### \* In 2002, which states were observed at 7 locations?
 
 ``` r
 # Part 2 focuses on visualization and answering the questions
@@ -459,14 +459,12 @@ ggsave('q3_2.jpeg')
 
 I filter January and July, create a variable called “avg\_temp” for the
 daily average temperature, group by id, year and month and calculate the
-mean temperature, and use ggplot, geom\_point and geom\_smooth to make
-the plot.
+mean temperature, and use geom\_line to make the plot.
 
 In general, the temperature in January is much lower than July. The
 temperatue across stations and years fluctuate but are stable overall.
 Compared to July, the variation of temperature between stations is more
-significant. There two outliers in the July panel in 2004 and 2007
-respectively.
+significant.
 
 #### Make a two-panel plot showing (i) tmax vs tmin for the full dataset (note that a scatterplot may not be the best option); and (ii) make a plot showing the distribution of snowfall values greater than 0 and less than 100 separately by year
 
@@ -495,4 +493,4 @@ center of the plot and show a linear pattern.
 
 The box plot shows the distribution of snowfall values \>0 and \<100 by
 year. The average snowfall seems very stable across years. However the
-distribution shows more fluctuation from 2004 to 2010.
+distribution shows more fluctuation from 2004 ~ 2010.
